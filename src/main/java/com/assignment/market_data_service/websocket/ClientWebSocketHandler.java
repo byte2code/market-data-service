@@ -16,16 +16,22 @@ public class ClientWebSocketHandler extends TextWebSocketHandler {
 
     private static final Logger log = LoggerFactory.getLogger(ClientWebSocketHandler.class);
     private final OrderBookServiceImpl orderBookService;
+    private final SessionManager sessionManager;
     private final ObjectMapper objectMapper;
 
-    public ClientWebSocketHandler(OrderBookServiceImpl orderBookService, ObjectMapper objectMapper) {
+    public ClientWebSocketHandler(OrderBookServiceImpl orderBookService, SessionManager sessionManager, ObjectMapper objectMapper) {
         this.orderBookService = orderBookService;
+        this.sessionManager = sessionManager;
         this.objectMapper = objectMapper;
     }
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         log.info("Browser WebSocket connection established: {}", session.getId());
+        String username = getUsername(session);
+        if (username != null) {
+            sessionManager.registerSession(username, session);
+        }
     }
 
     @Override
@@ -50,6 +56,15 @@ public class ClientWebSocketHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         log.info("Browser WebSocket connection closed: {}", session.getId());
+        String username = getUsername(session);
+        if (username != null) {
+            sessionManager.removeSession(username, session);
+        }
         orderBookService.handleSessionDisconnect(session);
+    }
+
+    private String getUsername(WebSocketSession session) {
+        java.security.Principal principal = session.getPrincipal();
+        return principal != null ? principal.getName() : null;
     }
 }
