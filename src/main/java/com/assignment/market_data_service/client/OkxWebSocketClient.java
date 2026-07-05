@@ -16,6 +16,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @Component
 public class OkxWebSocketClient {
@@ -26,6 +29,7 @@ public class OkxWebSocketClient {
     private final WebSocketClient client;
     private WebSocketSession okxSession;
     private OkxListener listener;
+    private final ScheduledExecutorService heartbeatScheduler;
 
     public interface OkxListener {
         void onConnected();
@@ -36,6 +40,23 @@ public class OkxWebSocketClient {
         this.websocketUrl = websocketUrl;
         this.objectMapper = objectMapper;
         this.client = new StandardWebSocketClient();
+        this.heartbeatScheduler = Executors.newSingleThreadScheduledExecutor();
+        startHeartbeat();
+    }
+
+    private void startHeartbeat() {
+        heartbeatScheduler.scheduleAtFixedRate(() -> {
+            synchronized (this) {
+                if (okxSession != null && okxSession.isOpen()) {
+                    try {
+                        log.debug("Sending heartbeat ping to OKX");
+                        okxSession.sendMessage(new TextMessage("ping"));
+                    } catch (IOException e) {
+                        log.error("Failed to send heartbeat ping to OKX", e);
+                    }
+                }
+            }
+        }, 20, 20, TimeUnit.SECONDS);
     }
 
     public synchronized void connect(OkxListener listener) {
@@ -86,7 +107,8 @@ public class OkxWebSocketClient {
 
     public synchronized void subscribe(String symbol) {
         if (okxSession == null || !okxSession.isOpen()) {
-            log.warn("Cannot subscribe, OKX session is not active");
+            log.warn("OKX WebSocket session is not active. Attempting to connect...");
+            connect(this.listener);
             return;
         }
         log.info("Subscribing to OKX order book for: {}", symbol);
