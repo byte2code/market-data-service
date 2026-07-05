@@ -7,7 +7,10 @@
 </head>
 <body>
     <div class="container">
-        <h1 id="orderbook-title">Order Book</h1>
+        <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <h1>Order Book: <span id="symbol" th:text="${symbol}"></span></h1>
+            <a th:href="@{/market}" style="text-decoration: none; border: 1px solid var(--border-color); color: var(--text-color); padding: 0.5rem 1rem; border-radius: 6px;">Back to Market</a>
+        </header>
         <div class="orderbook-container">
             <div class="side bids">
                 <h2>Bids (Buy)</h2>
@@ -19,7 +22,9 @@
                         </tr>
                     </thead>
                     <tbody id="bids-body">
-                        <!-- Data populated dynamically via WS -->
+                        <tr>
+                            <td colspan="2" style="text-align: center; color: var(--text-muted);">Waiting for stream...</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -33,7 +38,9 @@
                         </tr>
                     </thead>
                     <tbody id="asks-body">
-                        <!-- Data populated dynamically via WS -->
+                        <tr>
+                            <td colspan="2" style="text-align: center; color: var(--text-muted);">Waiting for stream...</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>

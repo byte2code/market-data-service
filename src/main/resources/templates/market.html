@@ -7,18 +7,25 @@
 </head>
 <body>
     <div class="container">
-        <h1>Market Overview (Top 20 Spot Trading Pairs)</h1>
+        <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <h1>Market Overview</h1>
+            <form th:action="@{/logout}" method="post">
+                <button type="submit" style="background: none; border: 1px solid var(--border-color); color: var(--text-color); padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">Logout</button>
+            </form>
+        </header>
         <table>
             <thead>
                 <tr>
                     <th>Symbol</th>
                     <th>Last Price</th>
                     <th>24h Change %</th>
-                    <th>24h Volume</th>
+                    <th>24h Volume (USDT)</th>
                 </tr>
             </thead>
             <tbody id="market-pairs-body">
-                <!-- Data populated dynamically -->
+                <tr>
+                    <td colspan="4" style="text-align: center; color: var(--text-muted);">Loading market data...</td>
+                </tr>
             </tbody>
         </table>
     </div>

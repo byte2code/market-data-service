@@ -17,7 +17,8 @@ public class LoginController {
     }
 
     @GetMapping("/orderbook")
-    public String orderBook() {
+    public String orderBook(@org.springframework.web.bind.annotation.RequestParam String symbol, org.springframework.ui.Model model) {
+        model.addAttribute("symbol", symbol);
         return "orderbook";
     }
 }
