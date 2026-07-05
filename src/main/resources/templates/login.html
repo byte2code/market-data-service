@@ -8,6 +8,12 @@
 <body>
     <div class="container">
         <h1>Login</h1>
+        <div th:if="${param.error}" class="error-msg" style="color: var(--danger-color); margin-bottom: 1rem;">
+            Invalid username or password.
+        </div>
+        <div th:if="${param.logout}" class="success-msg" style="color: var(--success-color); margin-bottom: 1rem;">
+            You have been logged out.
+        </div>
         <form th:action="@{/login}" method="post">
             <div>
                 <label for="username">Username:</label>
