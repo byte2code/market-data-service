@@ -18,6 +18,9 @@ public class WebClientConfig {
 
     @Bean
     public WebClient okxWebClient(WebClient.Builder webClientBuilder) {
-        return webClientBuilder.baseUrl(okxBaseUrl).build();
+        return webClientBuilder
+                .baseUrl(okxBaseUrl)
+                .codecs(codecs -> codecs.defaultCodecs().maxInMemorySize(10 * 1024 * 1024))
+                .build();
     }
 }
