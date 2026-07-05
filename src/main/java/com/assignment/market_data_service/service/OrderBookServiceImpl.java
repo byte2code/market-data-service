@@ -169,4 +169,8 @@ public class OrderBookServiceImpl implements OrderBookService {
 
         return dto;
     }
+
+    public ConcurrentHashMap<String, CopyOnWriteArraySet<WebSocketSession>> getSymbolSessions() {
+        return symbolSessions;
+    }
 }

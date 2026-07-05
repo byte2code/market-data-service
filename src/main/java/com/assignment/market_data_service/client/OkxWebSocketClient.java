@@ -11,6 +11,8 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.client.WebSocketClient;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
+import jakarta.websocket.ContainerProvider;
+import jakarta.websocket.WebSocketContainer;
 
 import java.io.IOException;
 import java.util.List;
@@ -39,7 +41,12 @@ public class OkxWebSocketClient {
     public OkxWebSocketClient(@Value("${okx.websocket-url}") String websocketUrl, ObjectMapper objectMapper) {
         this.websocketUrl = websocketUrl;
         this.objectMapper = objectMapper;
-        this.client = new StandardWebSocketClient();
+        
+        WebSocketContainer container = ContainerProvider.getWebSocketContainer();
+        container.setDefaultMaxTextMessageBufferSize(10 * 1024 * 1024); // 10MB
+        container.setDefaultMaxBinaryMessageBufferSize(10 * 1024 * 1024);
+        this.client = new StandardWebSocketClient(container);
+        
         this.heartbeatScheduler = Executors.newSingleThreadScheduledExecutor();
         startHeartbeat();
     }
@@ -132,5 +139,9 @@ public class OkxWebSocketClient {
         } catch (IOException e) {
             log.error("Failed to send subscription op to OKX", e);
         }
+    }
+
+    public synchronized boolean isConnected() {
+        return okxSession != null && okxSession.isOpen();
     }
 }
