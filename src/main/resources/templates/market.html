@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Market Overview</title>
+    <link rel="stylesheet" th:href="@{/style.css}">
+</head>
+<body>
+    <div class="container">
+        <h1>Market Overview (Top 20 Spot Trading Pairs)</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>Symbol</th>
+                    <th>Last Price</th>
+                    <th>24h Change %</th>
+                    <th>24h Volume</th>
+                </tr>
+            </thead>
+            <tbody id="market-pairs-body">
+                <!-- Data populated dynamically -->
+            </tbody>
+        </table>
+    </div>
+    <script th:src="@{/app.js}"></script>
+</body>
+</html>

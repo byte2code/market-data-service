@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Order Book</title>
+    <link rel="stylesheet" th:href="@{/style.css}">
+</head>
+<body>
+    <div class="container">
+        <h1 id="orderbook-title">Order Book</h1>
+        <div class="orderbook-container">
+            <div class="side bids">
+                <h2>Bids (Buy)</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Price</th>
+                            <th>Size</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bids-body">
+                        <!-- Data populated dynamically via WS -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="side asks">
+                <h2>Asks (Sell)</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Price</th>
+                            <th>Size</th>
+                        </tr>
+                    </thead>
+                    <tbody id="asks-body">
+                        <!-- Data populated dynamically via WS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script th:src="@{/app.js}"></script>
+</body>
+</html>
