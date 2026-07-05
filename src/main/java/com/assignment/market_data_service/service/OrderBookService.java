@@ -1,8 +1,9 @@
 package com.assignment.market_data_service.service;
 
-import com.assignment.market_data_service.dto.OrderBookDto;
-import reactor.core.publisher.Flux;
+import org.springframework.web.socket.WebSocketSession;
 
 public interface OrderBookService {
-    Flux<OrderBookDto> subscribeOrderBook(String symbol);
+    void handleClientSubscribe(WebSocketSession session, String symbol);
+    void handleClientUnsubscribe(WebSocketSession session, String symbol);
+    void handleSessionDisconnect(WebSocketSession session);
 }

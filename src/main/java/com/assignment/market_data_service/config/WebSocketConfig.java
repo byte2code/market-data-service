@@ -18,6 +18,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(clientWebSocketHandler, "/ws/orderbook").setAllowedOrigins("*");
+        registry.addHandler(clientWebSocketHandler, "/ws/orderbook")
+                .setAllowedOrigins("http://localhost:8080", "http://127.0.0.1:8080", "https://localhost:8080", "https://127.0.0.1:8080");
     }
 }

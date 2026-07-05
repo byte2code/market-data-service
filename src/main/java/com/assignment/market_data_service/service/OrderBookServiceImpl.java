@@ -47,10 +47,6 @@ public class OrderBookServiceImpl implements OrderBookService {
     }
 
     @Override
-    public Flux<OrderBookDto> subscribeOrderBook(String symbol) {
-        return Flux.empty();
-    }
-
     public void handleClientSubscribe(WebSocketSession session, String symbol) {
         log.info("Client session {} subscribing to {}", session.getId(), symbol);
         
@@ -62,6 +58,7 @@ public class OrderBookServiceImpl implements OrderBookService {
         }
     }
 
+    @Override
     public void handleClientUnsubscribe(WebSocketSession session, String symbol) {
         log.info("Client session {} unsubscribing from {}", session.getId(), symbol);
         
@@ -83,6 +80,7 @@ public class OrderBookServiceImpl implements OrderBookService {
         }
     }
 
+    @Override
     public void handleSessionDisconnect(WebSocketSession session) {
         log.info("Session disconnected, cleaning up: {}", session.getId());
         CopyOnWriteArraySet<String> symbols = sessionSymbols.remove(session.getId());
