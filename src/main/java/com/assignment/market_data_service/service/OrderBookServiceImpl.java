@@ -30,7 +30,20 @@ public class OrderBookServiceImpl implements OrderBookService {
     public OrderBookServiceImpl(OkxWebSocketClient okxWebSocketClient, ObjectMapper objectMapper) {
         this.okxWebSocketClient = okxWebSocketClient;
         this.objectMapper = objectMapper;
-        this.okxWebSocketClient.connect(this::processOkxMessage);
+        this.okxWebSocketClient.connect(new OkxWebSocketClient.OkxListener() {
+            @Override
+            public void onConnected() {
+                log.info("OKX WebSocket connected. Re-subscribing to active symbols: {}", symbolSessions.keySet());
+                for (String symbol : symbolSessions.keySet()) {
+                    okxWebSocketClient.subscribe(symbol);
+                }
+            }
+
+            @Override
+            public void onMessage(String payload) {
+                processOkxMessage(payload);
+            }
+        });
     }
 
     @Override

@@ -15,8 +15,7 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.function.Consumer;
+import java.util.concurrent.CompletableFuture;
 
 @Component
 public class OkxWebSocketClient {
@@ -26,7 +25,12 @@ public class OkxWebSocketClient {
     private final ObjectMapper objectMapper;
     private final WebSocketClient client;
     private WebSocketSession okxSession;
-    private Consumer<String> messageHandler;
+    private OkxListener listener;
+
+    public interface OkxListener {
+        void onConnected();
+        void onMessage(String payload);
+    }
 
     public OkxWebSocketClient(@Value("${okx.websocket-url}") String websocketUrl, ObjectMapper objectMapper) {
         this.websocketUrl = websocketUrl;
@@ -34,46 +38,50 @@ public class OkxWebSocketClient {
         this.client = new StandardWebSocketClient();
     }
 
-    public synchronized void connect(Consumer<String> messageHandler) {
-        this.messageHandler = messageHandler;
+    public synchronized void connect(OkxListener listener) {
+        this.listener = listener;
         if (okxSession != null && okxSession.isOpen()) {
             return;
         }
-        log.info("Connecting to OKX WebSocket API: {}", websocketUrl);
-        try {
-            client.execute(new TextWebSocketHandler() {
-                @Override
-                public void afterConnectionEstablished(WebSocketSession session) {
-                    log.info("OKX WebSocket connection established");
-                    okxSession = session;
-                }
-
-                @Override
-                protected void handleTextMessage(WebSocketSession session, TextMessage message) {
-                    String payload = message.getPayload();
-                    if (payload.contains("\"event\":") || payload.equals("pong")) {
-                        return;
+        log.info("Connecting asynchronously to OKX WebSocket API: {}", websocketUrl);
+        CompletableFuture.runAsync(() -> {
+            try {
+                client.execute(new TextWebSocketHandler() {
+                    @Override
+                    public void afterConnectionEstablished(WebSocketSession session) {
+                        log.info("OKX WebSocket connection established");
+                        okxSession = session;
+                        if (OkxWebSocketClient.this.listener != null) {
+                            OkxWebSocketClient.this.listener.onConnected();
+                        }
                     }
-                    if (OkxWebSocketClient.this.messageHandler != null) {
-                        OkxWebSocketClient.this.messageHandler.accept(payload);
+
+                    @Override
+                    protected void handleTextMessage(WebSocketSession session, TextMessage message) {
+                        String payload = message.getPayload();
+                        if (payload.contains("\"event\":") || payload.equals("pong")) {
+                            return;
+                        }
+                        if (OkxWebSocketClient.this.listener != null) {
+                            OkxWebSocketClient.this.listener.onMessage(payload);
+                        }
                     }
-                }
 
-                @Override
-                public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
-                    log.warn("OKX WebSocket connection closed: {}", status);
-                    okxSession = null;
-                }
+                    @Override
+                    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
+                        log.warn("OKX WebSocket connection closed: {}", status);
+                        okxSession = null;
+                    }
 
-                @Override
-                public void handleTransportError(WebSocketSession session, Throwable exception) {
-                    log.error("OKX WebSocket transport error", exception);
-                }
-            }, websocketUrl).get();
-        } catch (InterruptedException | ExecutionException e) {
-            log.error("Failed to connect to OKX WebSocket", e);
-            Thread.currentThread().interrupt();
-        }
+                    @Override
+                    public void handleTransportError(WebSocketSession session, Throwable exception) {
+                        log.error("OKX WebSocket transport error", exception);
+                    }
+                }, websocketUrl).get();
+            } catch (Exception e) {
+                log.error("Failed to connect to OKX WebSocket", e);
+            }
+        });
     }
 
     public synchronized void subscribe(String symbol) {
